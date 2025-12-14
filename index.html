@@ -1,728 +1,721 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Plane, MapPin, Coffee, Rocket, Users, Heart, Trophy, Zap } from 'lucide-react';
-
-const AviationYearlyWrap = () => {
-  const [currentMonth, setCurrentMonth] = useState(0);
-  const [dragStart, setDragStart] = useState(null);
-  const [dragOffset, setDragOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [photoIndices, setPhotoIndices] = useState({});
-  const [photoDragStart, setPhotoDragStart] = useState(null);
-  const [photoDragOffset, setPhotoDragOffset] = useState(0);
-  const [isPhotoDragging, setIsPhotoDragging] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [passwordInput, setPasswordInput] = useState('');
-  const [showError, setShowError] = useState(false);
-  const containerRef = useRef(null);
-
-  const months = [
-    {
-      month: "JAN",
-      callsign: "RCLTT-001",
-      title: "First Raclette Mission",
-      highlights: [
-        "First team raclette in the office",
-        "Cheese levels: MAXIMUM",
-        "Team bonding achieved ✓"
-      ],
-      photos: [
-        "https://i.imgur.com/ZjpVd6k.jpeg",
-        "https://i.imgur.com/XKgv7o7.jpeg",
-        "https://i.imgur.com/tbsJeCY.jpeg",
-        "https://i.imgur.com/Y3avpWd.jpeg"
-      ],
-      gradient: "from-orange-400 via-red-400 to-pink-500",
-      icon: Coffee
-    },
-    {
-      month: "FEB",
-      callsign: "TOKYO-737",
-      title: "Simon's Japan Departure",
-      highlights: [
-        "Simon heads to Japan",
-        "Remote work: Level ASIA",
-        "Time zones are just suggestions"
-      ],
-      photos: [
-        "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80",
-        "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80",
-        "https://images.unsplash.com/photo-1528164344705-47542687000d?w=800&q=80"
-      ],
-      gradient: "from-pink-400 via-purple-400 to-indigo-500",
-      icon: Plane
-    },
-    {
-      month: "MAR",
-      callsign: "CONTRAIL-CPH",
-      title: "Conference & Rebrand",
-      highlights: [
-        "Copenhagen Contrails Conference",
-        "L3 Harris → Acron",
-        "Gill's green dinosaur celebration 🦖"
-      ],
-      photos: [
-        "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=800&q=80",
-        "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&q=80",
-        "https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=800&q=80"
-      ],
-      gradient: "from-indigo-400 via-blue-400 to-cyan-500",
-      icon: Users
-    },
-    {
-      month: "APR",
-      callsign: "NAVITAR-NEG",
-      title: "The Naming Wars",
-      highlights: [
-        "Naming options under review",
-        "Fighting back against 'Navitar'",
-        "Internal debates: INTENSE"
-      ],
-      photos: [
-        "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80",
-        "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80"
-      ],
-      gradient: "from-cyan-400 via-teal-400 to-green-500",
-      icon: Zap
-    },
-    {
-      month: "MAY",
-      callsign: "BLANK-505",
-      title: "Mission Data Missing",
-      highlights: [
-        "Flight log incomplete",
-        "Awaiting mission details",
-        "Stand by for update..."
-      ],
-      photos: [
-        "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&q=80"
-      ],
-      gradient: "from-green-400 via-emerald-400 to-teal-500",
-      icon: MapPin
-    },
-    {
-      month: "JUN",
-      callsign: "ASTRA-AMS",
-      title: "Amsterdam Launch & Games",
-      highlights: [
-        "Astra & Astra Insights launch in Amsterdam",
-        "Elena destroys everyone at Rummikub (3x!)",
-        "Viktor runs CPH→Malmö half marathon"
-      ],
-      photos: [
-        "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800&q=80",
-        "https://images.unsplash.com/photo-1523289333742-be1143f6b766?w=800&q=80",
-        "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800&q=80",
-        "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80"
-      ],
-      gradient: "from-teal-400 via-blue-400 to-indigo-500",
-      icon: Rocket
-    },
-    {
-      month: "JUL",
-      callsign: "BDAY-PARTY",
-      title: "Birthday Celebrations",
-      highlights: [
-        "Simon's belated birthday bash",
-        "Viktor's belated birthday too",
-        "Double cake = double fun 🎂"
-      ],
-      photos: [
-        "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800&q=80",
-        "https://images.unsplash.com/photo-1558636508-e0db3814bd1d?w=800&q=80"
-      ],
-      gradient: "from-indigo-400 via-purple-400 to-pink-500",
-      icon: Coffee
-    },
-    {
-      month: "AUG",
-      callsign: "LUND-ENGAGED",
-      title: "Sweden Trip & Big News",
-      highlights: [
-        "Team trip to Lund, Sweden",
-        "Meet Vice and Josephine",
-        "Viktor proposes & gets engaged 💍"
-      ],
-      photos: [
-        "https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?w=800&q=80",
-        "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=800&q=80",
-        "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80"
-      ],
-      gradient: "from-pink-400 via-rose-400 to-red-500",
-      icon: Heart
-    },
-    {
-      month: "SEP",
-      callsign: "BLANK-909",
-      title: "Maintenance Break",
-      highlights: [
-        "Flight recorder offline",
-        "Data pending upload",
-        "Check back soon..."
-      ],
-      photos: [
-        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80"
-      ],
-      gradient: "from-red-400 via-orange-400 to-yellow-500",
-      icon: Plane
-    },
-    {
-      month: "OCT",
-      callsign: "PARIS-EUROCTL",
-      title: "Innovation & Asia Expansion",
-      highlights: [
-        "Cillas & Viktor → Eurocontrol Paris",
-        "Elena meets AirAsia in Malaysia",
-        "Global expansion mode: ON"
-      ],
-      photos: [
-        "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&q=80",
-        "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?w=800&q=80",
-        "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&q=80"
-      ],
-      gradient: "from-yellow-400 via-amber-400 to-orange-500",
-      icon: MapPin
-    },
-    {
-      month: "NOV",
-      callsign: "CPH-SIMFLIGHT",
-      title: "Visitors & Flight Sim Flex",
-      highlights: [
-        "Dor visits Copenhagen",
-        "Simon & Viktor claim they can land a plane",
-        "Confidence: 100% | Reality: TBD"
-      ],
-      photos: [
-        "https://images.unsplash.com/photo-1556388158-158ea5ccacbd?w=800&q=80",
-        "https://images.unsplash.com/photo-1583553440688-9017b7c23b71?w=800&q=80"
-      ],
-      gradient: "from-orange-400 via-red-400 to-pink-500",
-      icon: Trophy
-    },
-    {
-      month: "DEC",
-      callsign: "YEAR-END-2025",
-      title: "Final Approach",
-      highlights: [
-        "Year wrap complete",
-        "Flight data logged",
-        "Ready for 2026 takeoff 🚀"
-      ],
-      photos: [
-        "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?w=800&q=80",
-        "https://images.unsplash.com/photo-1467810563316-b5476525c0f9?w=800&q=80"
-      ],
-      gradient: "from-pink-400 via-purple-400 to-indigo-500",
-      icon: Rocket
-    }
-  ];
-
-  useEffect(() => {
-    const initialIndices = {};
-    months.forEach((_, idx) => {
-      initialIndices[idx] = 0;
-    });
-    setPhotoIndices(initialIndices);
-  }, []);
-
-  const handlePointerDown = (e) => {
-    if (e.target.closest('.photo-carousel')) return;
-    setIsDragging(true);
-    setDragStart(e.clientX || e.touches?.[0]?.clientX);
-  };
-
-  const handlePointerMove = (e) => {
-    if (!isDragging || dragStart === null) return;
-    const currentX = e.clientX || e.touches?.[0]?.clientX;
-    const diff = currentX - dragStart;
-    setDragOffset(diff);
-  };
-
-  const handlePointerUp = () => {
-    if (!isDragging) return;
-    
-    const threshold = 80;
-    if (dragOffset > threshold && currentMonth > 0) {
-      setCurrentMonth(currentMonth - 1);
-    } else if (dragOffset < -threshold && currentMonth < months.length - 1) {
-      setCurrentMonth(currentMonth + 1);
-    }
-    
-    setIsDragging(false);
-    setDragStart(null);
-    setDragOffset(0);
-  };
-
-  const handlePhotoPointerDown = (e) => {
-    e.stopPropagation();
-    setIsPhotoDragging(true);
-    setPhotoDragStart(e.clientX || e.touches?.[0]?.clientX);
-  };
-
-  const handlePhotoPointerMove = (e) => {
-    if (!isPhotoDragging || photoDragStart === null) return;
-    e.stopPropagation();
-    const currentX = e.clientX || e.touches?.[0]?.clientX;
-    const diff = currentX - photoDragStart;
-    setPhotoDragOffset(diff);
-  };
-
-  const handlePhotoPointerUp = (e) => {
-    if (!isPhotoDragging) return;
-    e.stopPropagation();
-    
-    const threshold = 50;
-    const currentPhotos = months[currentMonth].photos;
-    const currentPhotoIndex = photoIndices[currentMonth] || 0;
-    
-    if (photoDragOffset > threshold && currentPhotoIndex > 0) {
-      setPhotoIndices(prev => ({...prev, [currentMonth]: currentPhotoIndex - 1}));
-    } else if (photoDragOffset < -threshold && currentPhotoIndex < currentPhotos.length - 1) {
-      setPhotoIndices(prev => ({...prev, [currentMonth]: currentPhotoIndex + 1}));
-    }
-    
-    setIsPhotoDragging(false);
-    setPhotoDragStart(null);
-    setPhotoDragOffset(0);
-  };
-
-  const nextMonth = () => {
-    if (currentMonth < months.length - 1) {
-      setCurrentMonth(currentMonth + 1);
-    }
-  };
-
-  const prevMonth = () => {
-    if (currentMonth > 0) {
-      setCurrentMonth(currentMonth - 1);
-    }
-  };
-
-  const nextPhoto = (e) => {
-    e.stopPropagation();
-    const currentPhotos = months[currentMonth].photos;
-    const currentPhotoIndex = photoIndices[currentMonth] || 0;
-    if (currentPhotoIndex < currentPhotos.length - 1) {
-      setPhotoIndices(prev => ({...prev, [currentMonth]: currentPhotoIndex + 1}));
-    }
-  };
-
-  const prevPhoto = (e) => {
-    e.stopPropagation();
-    const currentPhotoIndex = photoIndices[currentMonth] || 0;
-    if (currentPhotoIndex > 0) {
-      setPhotoIndices(prev => ({...prev, [currentMonth]: currentPhotoIndex - 1}));
-    }
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'ArrowRight') nextMonth();
-      if (e.key === 'ArrowLeft') prevMonth();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentMonth]);
-
-  const currentData = months[currentMonth];
-  const currentPhotoIndex = photoIndices[currentMonth] || 0;
-
-  // Password protection - change this to your desired password
-  const PASSWORD = 'team2025';
-
-  const handlePasswordSubmit = (e) => {
-    e.preventDefault();
-    if (passwordInput.trim() === PASSWORD) {
-      setIsAuthenticated(true);
-      setShowError(false);
-    } else {
-      setShowError(true);
-      setPasswordInput('');
-      setTimeout(() => setShowError(false), 3000);
-    }
-  };
-
-  // If not authenticated, show password screen
-  if (!isAuthenticated) {
-    return (
-      <div className="w-full h-screen bg-slate-950 flex items-center justify-center relative overflow-hidden">
-        {/* Animated radar grid background */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `
-              linear-gradient(to right, #22d3ee 1px, transparent 1px),
-              linear-gradient(to bottom, #22d3ee 1px, transparent 1px)
-            `,
-            backgroundSize: '40px 40px'
-          }}></div>
-        </div>
-
-        <style>{`
-          @keyframes float {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Log 2025 - Team Yearly Wrap</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Courier New', monospace; overflow: hidden; }
+        
+        .bg-slate-950 { background-color: #020617; }
+        .bg-slate-900 { background-color: #0f172a; }
+        .bg-slate-800 { background-color: #1e293b; }
+        .bg-cyan-400 { background-color: #22d3ee; }
+        .text-white { color: #ffffff; }
+        .text-cyan-400 { color: #22d3ee; }
+        .text-slate-300 { color: #cbd5e1; }
+        .text-slate-400 { color: #94a3b8; }
+        .text-slate-500 { color: #64748b; }
+        .text-slate-600 { color: #475569; }
+        .text-slate-900 { color: #0f172a; }
+        .text-red-400 { color: #f87171; }
+        
+        .gradient-orange { background: linear-gradient(to bottom right, #fb923c, #ef4444, #ec4899); }
+        .gradient-pink { background: linear-gradient(to bottom right, #f472b6, #a855f7, #6366f1); }
+        .gradient-indigo { background: linear-gradient(to bottom right, #818cf8, #3b82f6, #06b6d4); }
+        .gradient-cyan { background: linear-gradient(to bottom right, #22d3ee, #14b8a6, #10b981); }
+        .gradient-green { background: linear-gradient(to bottom right, #34d399, #059669, #14b8a6); }
+        .gradient-teal { background: linear-gradient(to bottom right, #2dd4bf, #3b82f6, #6366f1); }
+        .gradient-purple { background: linear-gradient(to bottom right, #818cf8, #a855f7, #ec4899); }
+        .gradient-rose { background: linear-gradient(to bottom right, #fb7185, #f43f5e, #dc2626); }
+        .gradient-red { background: linear-gradient(to bottom right, #f87171, #fb923c, #fbbf24); }
+        .gradient-yellow { background: linear-gradient(to bottom right, #fbbf24, #f59e0b, #fb923c); }
+        
+        @keyframes float {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
-          }
-          @keyframes scanline {
+        }
+        
+        @keyframes scanline {
             0% { top: 0%; }
             100% { top: 100%; }
-          }
-        `}</style>
-
-        {/* Scanline effect */}
-        <div className="absolute inset-0 pointer-events-none opacity-10">
-          <div className="absolute w-full h-1 bg-cyan-400 blur-sm animate-pulse" 
-               style={{
-                 animation: 'scanline 8s linear infinite',
-                 top: '0%'
-               }}></div>
-        </div>
-
-        <div className="relative z-10 w-full max-w-md px-6">
-          {/* Logo/Header */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <Plane className="w-12 h-12 text-cyan-400" style={{animation: 'float 3s ease-in-out infinite'}} />
-              <div className="absolute w-24 h-24 bg-cyan-400/20 rounded-full blur-2xl"></div>
-            </div>
-            <h1 className="text-4xl font-bold text-white tracking-wider font-mono mb-2">FLIGHT LOG 2025</h1>
-            <p className="text-cyan-400 text-sm font-mono">TEAM.YEAR_WRAP.v2025</p>
-            <div className="mt-4 text-slate-400 text-sm font-mono">ACCESS RESTRICTED</div>
-          </div>
-
-          {/* Password Form */}
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 to-blue-400/20 rounded-xl blur-xl"></div>
-              <div className="relative bg-slate-900/80 backdrop-blur-md border-2 border-cyan-400/30 rounded-xl p-6">
-                <label className="block text-cyan-400 text-xs font-mono mb-3 tracking-widest">
-                  ENTER ACCESS CODE
-                </label>
-                <input
-                  type="password"
-                  value={passwordInput}
-                  onChange={(e) => {
-                    setPasswordInput(e.target.value);
-                    setShowError(false);
-                  }}
-                  placeholder="••••••••"
-                  className="w-full bg-slate-800 border-2 border-cyan-400/50 rounded-lg px-4 py-3 text-white font-mono focus:outline-none focus:border-cyan-400 transition-colors"
-                  autoFocus
-                />
-                {showError && (
-                  <div className="mt-3 text-red-400 text-sm font-mono flex items-center gap-2">
-                    <span className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></span>
-                    ACCESS DENIED - INVALID CODE
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              onClick={handlePasswordSubmit}
-              className="w-full bg-cyan-400 hover:bg-cyan-300 text-slate-900 font-bold font-mono py-3 rounded-xl transition-all transform hover:scale-105 active:scale-95"
-            >
-              → AUTHENTICATE
-            </button>
-          </form>
-
-          {/* Debug info - remove this later */}
-          <div className="mt-2 text-xs text-slate-600 font-mono text-center">
-            Debug: Password is "{PASSWORD}" | Input: "{passwordInput}" | Auth: {isAuthenticated ? 'true' : 'false'}
-          </div>
-
-          {/* Footer hint */}
-          <div className="mt-8 text-center text-slate-500 text-xs font-mono">
-            AUTHORIZED PERSONNEL ONLY
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="w-full h-screen bg-slate-950 overflow-hidden relative">
-      {/* Animated radar grid background */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `
-            linear-gradient(to right, #22d3ee 1px, transparent 1px),
-            linear-gradient(to bottom, #22d3ee 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px'
-        }}></div>
-      </div>
-
-      {/* Scanline effect */}
-      <div className="absolute inset-0 pointer-events-none opacity-10">
-        <div className="absolute w-full h-1 bg-cyan-400 blur-sm animate-pulse" 
-             style={{
-               animation: 'scanline 8s linear infinite',
-               top: '0%'
-             }}></div>
-      </div>
-
-      <style>{`
-        @keyframes scanline {
-          0% { top: 0%; }
-          100% { top: 100%; }
         }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
         @keyframes blink {
-          0%, 50%, 100% { opacity: 1; }
-          25%, 75% { opacity: 0.4; }
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.4; }
         }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
+        
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .animate-blink { animation: blink 2s infinite; }
+        
+        #app { width: 100vw; height: 100vh; position: relative; }
+        
+        .password-screen, .main-screen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
         }
-      `}</style>
-
-      {/* Top HUD bar */}
-      <div className="absolute top-0 left-0 right-0 z-30 bg-gradient-to-b from-slate-950 via-slate-900/80 to-transparent">
-        <div className="max-w-6xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Plane className="w-10 h-10 text-cyan-400" style={{animation: 'float 3s ease-in-out infinite'}} />
-                <div className="absolute -inset-2 bg-cyan-400/20 rounded-full blur-xl"></div>
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white tracking-wider font-mono">FLIGHT LOG 2025</h1>
-                <p className="text-cyan-400 text-sm font-mono">TEAM.YEAR_WRAP.v2025</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-cyan-400 text-sm font-mono mb-1">CALLSIGN</div>
-              <div className="text-white font-bold font-mono text-lg">{currentData.callsign}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main card container */}
-      <div 
-        ref={containerRef}
-        className="absolute inset-0 flex items-center justify-center px-4"
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onTouchStart={handlePointerDown}
-        onTouchMove={handlePointerMove}
-        onTouchEnd={handlePointerUp}
-        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
-      >
-        {months.map((monthData, index) => {
-          const offset = index - currentMonth;
-          const absOffset = Math.abs(offset);
-          const isActive = offset === 0;
-          const MonthIcon = monthData.icon;
-          const photoIndex = photoIndices[index] || 0;
-          const currentPhoto = monthData.photos[photoIndex];
-          const hasMultiplePhotos = monthData.photos.length > 1;
-          
-          return (
-            <div
-              key={index}
-              className="absolute transition-all duration-500 ease-out"
-              style={{
-                transform: `
-                  translateX(calc(${offset * 100}% + ${isDragging && isActive ? dragOffset : 0}px))
-                  scale(${isActive ? 1 : 0.82 - absOffset * 0.08})
-                  rotateY(${offset * 8}deg)
-                `,
-                opacity: absOffset > 1 ? 0 : 1 - absOffset * 0.6,
-                zIndex: 10 - absOffset,
-                pointerEvents: isActive ? 'auto' : 'none'
-              }}
-            >
-              <div className="w-[90vw] max-w-lg relative" style={{ height: 'min(75vh, 700px)' }}>
-                {/* Glowing border effect */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${monthData.gradient} rounded-3xl blur-xl opacity-50`}></div>
-                
-                {/* Main card */}
-                <div className="relative w-full h-full bg-slate-900 rounded-3xl border-2 border-cyan-400/30 shadow-2xl flex flex-col">
-                  
-                  {/* Month badge with radar styling */}
-                  <div className="absolute top-6 left-6 z-20">
-                    <div className="relative">
-                      <div className="bg-cyan-400/10 backdrop-blur-md border-2 border-cyan-400 rounded-lg px-5 py-2">
-                        <div className="text-cyan-400 text-xs font-mono mb-0.5">MONTH</div>
-                        <div className="text-white font-bold text-xl font-mono">{monthData.month}</div>
-                      </div>
-                      <div className="absolute top-0 right-0 w-2 h-2 bg-cyan-400 rounded-full animate-pulse" style={{animation: 'blink 2s infinite'}}></div>
+        
+        .grid-bg {
+            position: absolute;
+            inset: 0;
+            opacity: 0.2;
+            background-image: 
+                linear-gradient(to right, #22d3ee 1px, transparent 1px),
+                linear-gradient(to bottom, #22d3ee 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        
+        .scanline {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: #22d3ee;
+            filter: blur(4px);
+            opacity: 0.1;
+            animation: scanline 8s linear infinite;
+        }
+        
+        .password-box {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 28rem;
+            padding: 0 1.5rem;
+        }
+        
+        .password-form {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(34, 211, 238, 0.3);
+            border-radius: 1rem;
+            padding: 2rem;
+        }
+        
+        input[type="password"] {
+            width: 100%;
+            background: #1e293b;
+            border: 2px solid rgba(34, 211, 238, 0.5);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: white;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+        }
+        
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #22d3ee;
+        }
+        
+        button {
+            width: 100%;
+            background: #22d3ee;
+            color: #0f172a;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        
+        button:hover {
+            background: #67e8f9;
+            transform: scale(1.05);
+        }
+        
+        button:active {
+            transform: scale(0.95);
+        }
+        
+        button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        button:disabled:hover {
+            transform: scale(1);
+        }
+        
+        .card-container {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 1rem;
+        }
+        
+        .card {
+            position: absolute;
+            width: 90vw;
+            max-width: 32rem;
+            height: min(75vh, 700px);
+            transition: all 0.5s ease-out;
+        }
+        
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #0f172a;
+            border-radius: 1.5rem;
+            border: 2px solid rgba(34, 211, 238, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card-glow {
+            position: absolute;
+            inset: 0;
+            border-radius: 1.5rem;
+            filter: blur(40px);
+            opacity: 0.5;
+        }
+        
+        .photo-section {
+            position: relative;
+            height: 40%;
+            background: #1e293b;
+            border-radius: 1.5rem 1.5rem 0 0;
+            overflow: hidden;
+        }
+        
+        .photo-section img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.85);
+            transition: transform 0.3s;
+        }
+        
+        .content-section {
+            flex: 1;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: linear-gradient(to bottom, #0f172a, #020617);
+        }
+        
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 30;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(34, 211, 238, 0.5);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .nav-button:hover:not(:disabled) {
+            background: #1e293b;
+            border-color: #22d3ee;
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .nav-button svg {
+            width: 1.5rem;
+            height: 1.5rem;
+            color: #22d3ee;
+        }
+        
+        .nav-left { left: 1.5rem; }
+        .nav-right { right: 1.5rem; }
+        
+        .progress-dots {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            border-radius: 9999px;
+            padding: 0.75rem 1.5rem;
+        }
+        
+        .dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            background: #475569;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .dot.active {
+            width: 2.5rem;
+            background: #22d3ee;
+            box-shadow: 0 0 20px rgba(34, 211, 238, 0.5);
+        }
+        
+        .dot:hover:not(.active) {
+            background: rgba(34, 211, 238, 0.5);
+        }
+        
+        .header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 30;
+            background: linear-gradient(to bottom, #020617, rgba(2, 6, 23, 0));
+            padding: 1.5rem;
+        }
+        
+        .header-content {
+            max-width: 96rem;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .month-badge, .icon-badge {
+            position: absolute;
+            z-index: 20;
+        }
+        
+        .month-badge {
+            top: 1.5rem;
+            left: 1.5rem;
+            background: rgba(34, 211, 238, 0.1);
+            backdrop-filter: blur(12px);
+            border: 2px solid #22d3ee;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1.25rem;
+        }
+        
+        .icon-badge {
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            border-radius: 9999px;
+            padding: 0.75rem;
+        }
+        
+        .photo-nav {
+            position: absolute;
+            z-index: 10;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(34, 211, 238, 0.5);
+            padding: 0.625rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .photo-nav:hover:not(:disabled) {
+            background: #1e293b;
+        }
+        
+        .photo-nav svg {
+            width: 1.25rem;
+            height: 1.25rem;
+            color: #22d3ee;
+        }
+        
+        .photo-counter {
+            position: absolute;
+            bottom: 0.75rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            border-radius: 9999px;
+            padding: 0.375rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .photo-dot {
+            width: 0.375rem;
+            height: 0.375rem;
+            background: #475569;
+            border-radius: 9999px;
+            transition: all 0.3s;
+        }
+        
+        .photo-dot.active {
+            width: 1rem;
+            background: #22d3ee;
+        }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Password Screen -->
+        <div id="passwordScreen" class="password-screen bg-slate-950">
+            <div class="grid-bg"></div>
+            <div class="scanline"></div>
+            
+            <div class="password-box">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1rem;">
+                        <svg class="animate-float" style="width: 3rem; height: 3rem; color: #22d3ee;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"></path>
+                        </svg>
                     </div>
-                  </div>
-
-                  {/* Icon badge */}
-                  <div className="absolute top-6 right-6 z-20">
-                    <div className="bg-slate-800/80 backdrop-blur-md border border-cyan-400/30 rounded-full p-3">
-                      <MonthIcon className="w-6 h-6 text-cyan-400" />
-                    </div>
-                  </div>
-
-                  {/* Photo carousel section */}
-                  <div 
-                    className="relative photo-carousel bg-slate-800 rounded-t-3xl overflow-hidden"
-                    style={{ height: '40%' }}
-                    onPointerDown={handlePhotoPointerDown}
-                    onPointerMove={handlePhotoPointerMove}
-                    onPointerUp={handlePhotoPointerUp}
-                    onTouchStart={handlePhotoPointerDown}
-                    onTouchMove={handlePhotoPointerMove}
-                    onTouchEnd={handlePhotoPointerUp}
-                  >
-                    <img 
-                      src={currentPhoto} 
-                      alt={`${monthData.month} photo ${photoIndex + 1}`}
-                      className="w-full h-full object-cover transition-transform duration-300"
-                      style={{
-                        transform: `translateX(${isPhotoDragging && isActive ? photoDragOffset * 0.3 : 0}px)`,
-                        filter: 'brightness(0.85)'
-                      }}
-                      onError={(e) => {
-                        console.log('Image failed to load:', currentPhoto);
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                    <div className={`absolute inset-0 bg-gradient-to-br ${monthData.gradient} mix-blend-multiply opacity-40`}></div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent"></div>
-                    
-                    {/* Scanline effect over image */}
-                    <div className="absolute inset-0 pointer-events-none opacity-20" style={{
-                      backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(6, 182, 212, 0.1) 2px, rgba(6, 182, 212, 0.1) 4px)'
-                    }}></div>
-
-                    {/* Photo navigation arrows */}
-                    {hasMultiplePhotos && (
-                      <>
-                        <button
-                          onClick={prevPhoto}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 bg-slate-900/80 backdrop-blur-sm border border-cyan-400/50 p-2.5 rounded-lg hover:bg-slate-800 transition-all disabled:opacity-30 disabled:cursor-not-allowed z-10"
-                          disabled={photoIndex === 0}
-                        >
-                          <ChevronLeft className="w-5 h-5 text-cyan-400" />
-                        </button>
-                        <button
-                          onClick={nextPhoto}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 bg-slate-900/80 backdrop-blur-sm border border-cyan-400/50 p-2.5 rounded-lg hover:bg-slate-800 transition-all disabled:opacity-30 disabled:cursor-not-allowed z-10"
-                          disabled={photoIndex === monthData.photos.length - 1}
-                        >
-                          <ChevronRight className="w-5 h-5 text-cyan-400" />
-                        </button>
-                      </>
-                    )}
-
-                    {/* Photo counter and dots */}
-                    {hasMultiplePhotos && (
-                      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
-                        <div className="bg-slate-900/80 backdrop-blur-md border border-cyan-400/30 rounded-full px-4 py-1.5 flex items-center gap-2">
-                          <span className="text-cyan-400 text-xs font-mono">{photoIndex + 1}/{monthData.photos.length}</span>
-                          <div className="flex gap-1">
-                            {monthData.photos.map((_, pIdx) => (
-                              <div
-                                key={pIdx}
-                                className={`w-1.5 h-1.5 rounded-full transition-all ${
-                                  pIdx === photoIndex ? 'bg-cyan-400 w-4' : 'bg-slate-600'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Content section */}
-                  <div className="flex-1 p-6 flex flex-col justify-between relative bg-gradient-to-b from-slate-900 to-slate-950">
-                    
-                    {/* HUD-style divider */}
-                    <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent"></div>
-                    
-                    {/* Title */}
-                    <div className="mb-6">
-                      <div className="text-cyan-400 text-xs font-mono mb-2 tracking-widest">MISSION BRIEF</div>
-                      <h2 className="text-3xl font-bold text-white mb-2 leading-tight">
-                        {monthData.title}
-                      </h2>
-                    </div>
-
-                    {/* Highlights list */}
-                    <div className="flex-1 space-y-3 mb-4">
-                      {monthData.highlights.map((highlight, i) => (
-                        <div 
-                          key={i} 
-                          className="flex items-start gap-3 group"
-                        >
-                          <div className="mt-1.5 min-w-[6px] w-1.5 h-1.5 bg-cyan-400 rounded-full group-hover:scale-150 transition-transform"></div>
-                          <p className="text-slate-300 text-base leading-relaxed font-light">
-                            {highlight}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Footer with gradient line */}
-                    <div className="relative pt-4">
-                      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent"></div>
-                      <div className="flex items-center justify-between text-xs font-mono text-slate-500">
-                        <span>LOG.{String(index + 1).padStart(2, '0')}/12</span>
-                        <span className="text-cyan-400/60">▸ SWIPE TO NAVIGATE</span>
-                      </div>
-                    </div>
-                  </div>
+                    <h1 class="text-white" style="font-size: 2.25rem; font-weight: bold; margin-bottom: 0.5rem;">FLIGHT LOG 2025</h1>
+                    <p class="text-cyan-400" style="font-size: 0.875rem;">TEAM.YEAR_WRAP.v2025</p>
+                    <div class="text-slate-400" style="margin-top: 1rem; font-size: 0.875rem;">ACCESS RESTRICTED</div>
                 </div>
-              </div>
+                
+                <form id="passwordForm" onsubmit="return handlePasswordSubmit(event);">
+                    <div class="password-form">
+                        <label class="text-cyan-400" style="display: block; font-size: 0.75rem; margin-bottom: 0.75rem; letter-spacing: 0.1em;">
+                            ENTER ACCESS CODE
+                        </label>
+                        <input type="password" id="passwordInput" placeholder="••••••••" autocomplete="off">
+                        <div id="errorMessage" class="text-red-400 hidden" style="margin-top: 0.75rem; font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="width: 0.5rem; height: 0.5rem; background: #f87171; border-radius: 9999px;" class="animate-pulse"></span>
+                            ACCESS DENIED - INVALID CODE
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 1rem;">
+                        <button type="submit">→ AUTHENTICATE</button>
+                    </div>
+                </form>
+                
+                <div class="text-slate-500" style="margin-top: 2rem; text-align: center; font-size: 0.75rem;">
+                    AUTHORIZED PERSONNEL ONLY
+                </div>
             </div>
-          );
-        })}
-      </div>
-
-      {/* Navigation buttons with HUD styling */}
-      <button
-        onClick={prevMonth}
-        disabled={currentMonth === 0}
-        className="absolute left-6 top-1/2 -translate-y-1/2 z-30 bg-slate-900/80 backdrop-blur-md border-2 border-cyan-400/50 p-4 rounded-xl hover:bg-slate-800 hover:border-cyan-400 hover:scale-110 transition-all disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:scale-100 group"
-      >
-        <ChevronLeft className="w-6 h-6 text-cyan-400 group-hover:animate-pulse" />
-      </button>
-
-      <button
-        onClick={nextMonth}
-        disabled={currentMonth === months.length - 1}
-        className="absolute right-6 top-1/2 -translate-y-1/2 z-30 bg-slate-900/80 backdrop-blur-md border-2 border-cyan-400/50 p-4 rounded-xl hover:bg-slate-800 hover:border-cyan-400 hover:scale-110 transition-all disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:scale-100 group"
-      >
-        <ChevronRight className="w-6 h-6 text-cyan-400 group-hover:animate-pulse" />
-      </button>
-
-      {/* Progress indicator - radar style */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20">
-        <div className="bg-slate-900/80 backdrop-blur-md border border-cyan-400/30 rounded-full px-6 py-3 flex items-center gap-2">
-          {months.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentMonth(index)}
-              className="group relative"
-            >
-              <div className={`transition-all ${
-                index === currentMonth 
-                  ? 'w-10 h-2 bg-cyan-400 shadow-lg shadow-cyan-400/50' 
-                  : 'w-2 h-2 bg-slate-600 group-hover:bg-cyan-400/50'
-              } rounded-full`}></div>
-              {index === currentMonth && (
-                <div className="absolute inset-0 bg-cyan-400 rounded-full blur-md opacity-50"></div>
-              )}
+        </div>
+        
+        <!-- Main Screen -->
+        <div id="mainScreen" class="main-screen bg-slate-950 hidden">
+            <div class="grid-bg"></div>
+            <div class="scanline"></div>
+            
+            <!-- Header -->
+            <div class="header">
+                <div class="header-content">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <svg class="animate-float" style="width: 2.5rem; height: 2.5rem; color: #22d3ee;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"></path>
+                        </svg>
+                        <div>
+                            <h1 class="text-white" style="font-size: 1.5rem; font-weight: bold;">FLIGHT LOG 2025</h1>
+                            <p class="text-cyan-400" style="font-size: 0.875rem;">TEAM.YEAR_WRAP.v2025</p>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="text-cyan-400" style="font-size: 0.875rem; margin-bottom: 0.25rem;">CALLSIGN</div>
+                        <div class="text-white" id="currentCallsign" style="font-weight: bold; font-size: 1.125rem;">RCLTT-001</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cards Container -->
+            <div class="card-container" id="cardsContainer"></div>
+            
+            <!-- Navigation Buttons -->
+            <button class="nav-button nav-left" id="prevButton" onclick="prevMonth()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
             </button>
-          ))}
+            
+            <button class="nav-button nav-right" id="nextButton" onclick="nextMonth()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </button>
+            
+            <!-- Progress Dots -->
+            <div class="progress-dots" id="progressDots"></div>
+            
+            <!-- Bottom Instructions -->
+            <div class="text-slate-500" style="position: absolute; bottom: 5rem; left: 50%; transform: translateX(-50%); z-index: 10; text-align: center; font-size: 0.75rem; letter-spacing: 0.05em;">
+                USE <span class="text-cyan-400">← →</span> KEYS OR <span class="text-cyan-400">SWIPE</span> TO NAVIGATE
+            </div>
         </div>
-      </div>
-
-      {/* Bottom HUD info */}
-      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 text-center">
-        <div className="text-slate-500 text-xs font-mono tracking-wider">
-          USE <span className="text-cyan-400">← →</span> KEYS OR <span className="text-cyan-400">SWIPE</span> TO NAVIGATE
-        </div>
-      </div>
     </div>
-  );
-};
 
-export default AviationYearlyWrap;
+    <script>
+        // PASSWORD - Change this to your desired password
+        const PASSWORD = 'team2025';
+        
+        // MONTH DATA - Add your images here
+        const months = [
+            {
+                month: "JAN",
+                callsign: "RCLTT-001",
+                title: "First Raclette Mission",
+                highlights: [
+                    "First team raclette in the office",
+                    "Cheese levels: MAXIMUM",
+                    "Team bonding achieved ✓"
+                ],
+                photos: [
+                    "https://i.imgur.com/ZjpVd6k.jpeg",
+                    "https://i.imgur.com/XKgv7o7.jpeg",
+                    "https://i.imgur.com/tbsJeCY.jpeg",
+                    "https://i.imgur.com/Y3avpWd.jpeg"
+                ],
+                gradient: "gradient-orange"
+            },
+            {
+                month: "FEB",
+                callsign: "TOKYO-737",
+                title: "Simon's Japan Departure",
+                highlights: [
+                    "Simon heads to Japan",
+                    "Remote work: Level ASIA",
+                    "Time zones are just suggestions"
+                ],
+                photos: [
+                    "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80"
+                ],
+                gradient: "gradient-pink"
+            },
+            {
+                month: "MAR",
+                callsign: "CONTRAIL-CPH",
+                title: "Conference & Rebrand",
+                highlights: [
+                    "Copenhagen Contrails Conference",
+                    "L3 Harris → Acron",
+                    "Gill's green dinosaur celebration 🦖"
+                ],
+                photos: [
+                    "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=800&q=80"
+                ],
+                gradient: "gradient-indigo"
+            },
+            {
+                month: "APR",
+                callsign: "NAVITAR-NEG",
+                title: "The Naming Wars",
+                highlights: [
+                    "Naming options under review",
+                    "Fighting back against 'Navitar'",
+                    "Internal debates: INTENSE"
+                ],
+                photos: [
+                    "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80"
+                ],
+                gradient: "gradient-cyan"
+            },
+            {
+                month: "MAY",
+                callsign: "BLANK-505",
+                title: "Mission Data Missing",
+                highlights: [
+                    "Flight log incomplete",
+                    "Awaiting mission details",
+                    "Stand by for update..."
+                ],
+                photos: [
+                    "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&q=80"
+                ],
+                gradient: "gradient-green"
+            },
+            {
+                month: "JUN",
+                callsign: "ASTRA-AMS",
+                title: "Amsterdam Launch & Games",
+                highlights: [
+                    "Astra & Astra Insights launch in Amsterdam",
+                    "Elena destroys everyone at Rummikub (3x!)",
+                    "Viktor runs CPH→Malmö half marathon"
+                ],
+                photos: [
+                    "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800&q=80"
+                ],
+                gradient: "gradient-teal"
+            },
+            {
+                month: "JUL",
+                callsign: "BDAY-PARTY",
+                title: "Birthday Celebrations",
+                highlights: [
+                    "Simon's belated birthday bash",
+                    "Viktor's belated birthday too",
+                    "Double cake = double fun 🎂"
+                ],
+                photos: [
+                    "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800&q=80"
+                ],
+                gradient: "gradient-purple"
+            },
+            {
+                month: "AUG",
+                callsign: "LUND-ENGAGED",
+                title: "Sweden Trip & Big News",
+                highlights: [
+                    "Team trip to Lund, Sweden",
+                    "Meet Vice and Josephine",
+                    "Viktor proposes & gets engaged 💍"
+                ],
+                photos: [
+                    "https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?w=800&q=80"
+                ],
+                gradient: "gradient-rose"
+            },
+            {
+                month: "SEP",
+                callsign: "BLANK-909",
+                title: "Maintenance Break",
+                highlights: [
+                    "Flight recorder offline",
+                    "Data pending upload",
+                    "Check back soon..."
+                ],
+                photos: [
+                    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80"
+                ],
+                gradient: "gradient-red"
+            },
+            {
+                month: "OCT",
+                callsign: "PARIS-EUROCTL",
+                title: "Innovation & Asia Expansion",
+                highlights: [
+                    "Cillas & Viktor → Eurocontrol Paris",
+                    "Elena meets AirAsia in Malaysia",
+                    "Global expansion mode: ON"
+                ],
+                photos: [
+                    "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&q=80"
+                ],
+                gradient: "gradient-yellow"
+            },
+            {
+                month: "NOV",
+                callsign: "CPH-SIMFLIGHT",
+                title: "Visitors & Flight Sim Flex",
+                highlights: [
+                    "Dor visits Copenhagen",
+                    "Simon & Viktor claim they can land a plane",
+                    "Confidence: 100% | Reality: TBD"
+                ],
+                photos: [
+                    "https://images.unsplash.com/photo-1556388158-158ea5ccacbd?w=800&q=80"
+                ],
+                gradient: "gradient-orange"
+            },
+            {
+                month: "DEC",
+                callsign: "YEAR-END-2025",
+                title: "Final Approach",
+                highlights: [
+                    "Year wrap complete",
+                    "Flight data logged",
+                    "Ready for 2026 takeoff 🚀"
+                ],
+                photos: [
+                    "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?w=800&q=80"
+                ],
+                gradient: "gradient-purple"
+            }
+        ];
+        
+        let currentMonth = 0;
+        let photoIndices = {};
+        
+        // Initialize photo indices
+        months.forEach((_, idx) => {
+            photoIndices[idx] = 0;
+        });
+        
+        // Password handling
+        function handlePasswordSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('passwordInput').value.trim();
+            const errorMsg = document.getElementById('errorMessage');
+            
+            if (input === PASSWORD) {
+                document.getElementById('passwordScreen').classList.add('hidden');
+                document.getElementById('mainScreen').classList.remove('hidden');
+                initializeApp();
+            } else {
+                errorMsg.classList.remove('hidden');
+                document.getElementById('passwordInput').value = '';
+                setTimeout(() => {
+                    errorMsg.classList.add('hidden');
+                }, 3000);
+            }
+            return false;
+        }
+        
+        // Initialize the app
+        function initializeApp() {
+            renderCards();
+            renderProgressDots();
+            updateCards();
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight') nextMonth();
+                if (e.key === 'ArrowLeft') prevMonth();
+            });
+        }
+        
+        function renderCards() {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = '';
+            
+            months.forEach((month, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.id = `card-${index}`;
+                
+                const hasMultiplePhotos = month.photos.length > 1;
+                
+                card.innerHTML = `
+                    <div class="card-glow ${month.gradient}"></div>
+                    <div class="card-inner">
+                        <div class="month-badge">
+                            <div class="text-cyan-400" style="font-size: 0.75rem; margin-bottom: 0.125rem;">MONTH</div>
+                            <div class="text-white" style="font-weight: bold; font-size: 1.25rem;">${month.month}</div>
+                            <div style="position: absolute; top: 0; right: 0; width: 0.5rem; height: 0.5rem; background: #22d3ee; border-radius: 9999px;" class="animate-blink"></div>
+                        </div>
+                        
+                        <div class="icon-badge">
+                            <svg style="width: 1.5rem; height: 1.5rem; color: #22d3ee;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                                <line x1="6" y1="1" x2="6" y2="4"></line>
+                                <line x1="10" y1="1" x2="10" y2="4"></line>
+                                <line x1="14" y1="1" x2="14" y2="4"></line>
+                            </svg>
+                        </div>
+                        
+                        <div class="photo-section" id="photo-${index}">
+                            <img src="${month.photos[0]}" alt="${month.month}">
+                            ${hasMultiplePhotos ? `
+                                <button class="photo-nav" style
