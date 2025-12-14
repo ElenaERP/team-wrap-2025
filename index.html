@@ -1,0 +1,728 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { ChevronLeft, ChevronRight, Plane, MapPin, Coffee, Rocket, Users, Heart, Trophy, Zap } from 'lucide-react';
+
+const AviationYearlyWrap = () => {
+  const [currentMonth, setCurrentMonth] = useState(0);
+  const [dragStart, setDragStart] = useState(null);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [photoIndices, setPhotoIndices] = useState({});
+  const [photoDragStart, setPhotoDragStart] = useState(null);
+  const [photoDragOffset, setPhotoDragOffset] = useState(0);
+  const [isPhotoDragging, setIsPhotoDragging] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [showError, setShowError] = useState(false);
+  const containerRef = useRef(null);
+
+  const months = [
+    {
+      month: "JAN",
+      callsign: "RCLTT-001",
+      title: "First Raclette Mission",
+      highlights: [
+        "First team raclette in the office",
+        "Cheese levels: MAXIMUM",
+        "Team bonding achieved ✓"
+      ],
+      photos: [
+        "https://i.imgur.com/ZjpVd6k.jpeg",
+        "https://i.imgur.com/XKgv7o7.jpeg",
+        "https://i.imgur.com/tbsJeCY.jpeg",
+        "https://i.imgur.com/Y3avpWd.jpeg"
+      ],
+      gradient: "from-orange-400 via-red-400 to-pink-500",
+      icon: Coffee
+    },
+    {
+      month: "FEB",
+      callsign: "TOKYO-737",
+      title: "Simon's Japan Departure",
+      highlights: [
+        "Simon heads to Japan",
+        "Remote work: Level ASIA",
+        "Time zones are just suggestions"
+      ],
+      photos: [
+        "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80",
+        "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80",
+        "https://images.unsplash.com/photo-1528164344705-47542687000d?w=800&q=80"
+      ],
+      gradient: "from-pink-400 via-purple-400 to-indigo-500",
+      icon: Plane
+    },
+    {
+      month: "MAR",
+      callsign: "CONTRAIL-CPH",
+      title: "Conference & Rebrand",
+      highlights: [
+        "Copenhagen Contrails Conference",
+        "L3 Harris → Acron",
+        "Gill's green dinosaur celebration 🦖"
+      ],
+      photos: [
+        "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=800&q=80",
+        "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&q=80",
+        "https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=800&q=80"
+      ],
+      gradient: "from-indigo-400 via-blue-400 to-cyan-500",
+      icon: Users
+    },
+    {
+      month: "APR",
+      callsign: "NAVITAR-NEG",
+      title: "The Naming Wars",
+      highlights: [
+        "Naming options under review",
+        "Fighting back against 'Navitar'",
+        "Internal debates: INTENSE"
+      ],
+      photos: [
+        "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80",
+        "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80"
+      ],
+      gradient: "from-cyan-400 via-teal-400 to-green-500",
+      icon: Zap
+    },
+    {
+      month: "MAY",
+      callsign: "BLANK-505",
+      title: "Mission Data Missing",
+      highlights: [
+        "Flight log incomplete",
+        "Awaiting mission details",
+        "Stand by for update..."
+      ],
+      photos: [
+        "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&q=80"
+      ],
+      gradient: "from-green-400 via-emerald-400 to-teal-500",
+      icon: MapPin
+    },
+    {
+      month: "JUN",
+      callsign: "ASTRA-AMS",
+      title: "Amsterdam Launch & Games",
+      highlights: [
+        "Astra & Astra Insights launch in Amsterdam",
+        "Elena destroys everyone at Rummikub (3x!)",
+        "Viktor runs CPH→Malmö half marathon"
+      ],
+      photos: [
+        "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800&q=80",
+        "https://images.unsplash.com/photo-1523289333742-be1143f6b766?w=800&q=80",
+        "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800&q=80",
+        "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80"
+      ],
+      gradient: "from-teal-400 via-blue-400 to-indigo-500",
+      icon: Rocket
+    },
+    {
+      month: "JUL",
+      callsign: "BDAY-PARTY",
+      title: "Birthday Celebrations",
+      highlights: [
+        "Simon's belated birthday bash",
+        "Viktor's belated birthday too",
+        "Double cake = double fun 🎂"
+      ],
+      photos: [
+        "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800&q=80",
+        "https://images.unsplash.com/photo-1558636508-e0db3814bd1d?w=800&q=80"
+      ],
+      gradient: "from-indigo-400 via-purple-400 to-pink-500",
+      icon: Coffee
+    },
+    {
+      month: "AUG",
+      callsign: "LUND-ENGAGED",
+      title: "Sweden Trip & Big News",
+      highlights: [
+        "Team trip to Lund, Sweden",
+        "Meet Vice and Josephine",
+        "Viktor proposes & gets engaged 💍"
+      ],
+      photos: [
+        "https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?w=800&q=80",
+        "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=800&q=80",
+        "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80"
+      ],
+      gradient: "from-pink-400 via-rose-400 to-red-500",
+      icon: Heart
+    },
+    {
+      month: "SEP",
+      callsign: "BLANK-909",
+      title: "Maintenance Break",
+      highlights: [
+        "Flight recorder offline",
+        "Data pending upload",
+        "Check back soon..."
+      ],
+      photos: [
+        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80"
+      ],
+      gradient: "from-red-400 via-orange-400 to-yellow-500",
+      icon: Plane
+    },
+    {
+      month: "OCT",
+      callsign: "PARIS-EUROCTL",
+      title: "Innovation & Asia Expansion",
+      highlights: [
+        "Cillas & Viktor → Eurocontrol Paris",
+        "Elena meets AirAsia in Malaysia",
+        "Global expansion mode: ON"
+      ],
+      photos: [
+        "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&q=80",
+        "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?w=800&q=80",
+        "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&q=80"
+      ],
+      gradient: "from-yellow-400 via-amber-400 to-orange-500",
+      icon: MapPin
+    },
+    {
+      month: "NOV",
+      callsign: "CPH-SIMFLIGHT",
+      title: "Visitors & Flight Sim Flex",
+      highlights: [
+        "Dor visits Copenhagen",
+        "Simon & Viktor claim they can land a plane",
+        "Confidence: 100% | Reality: TBD"
+      ],
+      photos: [
+        "https://images.unsplash.com/photo-1556388158-158ea5ccacbd?w=800&q=80",
+        "https://images.unsplash.com/photo-1583553440688-9017b7c23b71?w=800&q=80"
+      ],
+      gradient: "from-orange-400 via-red-400 to-pink-500",
+      icon: Trophy
+    },
+    {
+      month: "DEC",
+      callsign: "YEAR-END-2025",
+      title: "Final Approach",
+      highlights: [
+        "Year wrap complete",
+        "Flight data logged",
+        "Ready for 2026 takeoff 🚀"
+      ],
+      photos: [
+        "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?w=800&q=80",
+        "https://images.unsplash.com/photo-1467810563316-b5476525c0f9?w=800&q=80"
+      ],
+      gradient: "from-pink-400 via-purple-400 to-indigo-500",
+      icon: Rocket
+    }
+  ];
+
+  useEffect(() => {
+    const initialIndices = {};
+    months.forEach((_, idx) => {
+      initialIndices[idx] = 0;
+    });
+    setPhotoIndices(initialIndices);
+  }, []);
+
+  const handlePointerDown = (e) => {
+    if (e.target.closest('.photo-carousel')) return;
+    setIsDragging(true);
+    setDragStart(e.clientX || e.touches?.[0]?.clientX);
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isDragging || dragStart === null) return;
+    const currentX = e.clientX || e.touches?.[0]?.clientX;
+    const diff = currentX - dragStart;
+    setDragOffset(diff);
+  };
+
+  const handlePointerUp = () => {
+    if (!isDragging) return;
+    
+    const threshold = 80;
+    if (dragOffset > threshold && currentMonth > 0) {
+      setCurrentMonth(currentMonth - 1);
+    } else if (dragOffset < -threshold && currentMonth < months.length - 1) {
+      setCurrentMonth(currentMonth + 1);
+    }
+    
+    setIsDragging(false);
+    setDragStart(null);
+    setDragOffset(0);
+  };
+
+  const handlePhotoPointerDown = (e) => {
+    e.stopPropagation();
+    setIsPhotoDragging(true);
+    setPhotoDragStart(e.clientX || e.touches?.[0]?.clientX);
+  };
+
+  const handlePhotoPointerMove = (e) => {
+    if (!isPhotoDragging || photoDragStart === null) return;
+    e.stopPropagation();
+    const currentX = e.clientX || e.touches?.[0]?.clientX;
+    const diff = currentX - photoDragStart;
+    setPhotoDragOffset(diff);
+  };
+
+  const handlePhotoPointerUp = (e) => {
+    if (!isPhotoDragging) return;
+    e.stopPropagation();
+    
+    const threshold = 50;
+    const currentPhotos = months[currentMonth].photos;
+    const currentPhotoIndex = photoIndices[currentMonth] || 0;
+    
+    if (photoDragOffset > threshold && currentPhotoIndex > 0) {
+      setPhotoIndices(prev => ({...prev, [currentMonth]: currentPhotoIndex - 1}));
+    } else if (photoDragOffset < -threshold && currentPhotoIndex < currentPhotos.length - 1) {
+      setPhotoIndices(prev => ({...prev, [currentMonth]: currentPhotoIndex + 1}));
+    }
+    
+    setIsPhotoDragging(false);
+    setPhotoDragStart(null);
+    setPhotoDragOffset(0);
+  };
+
+  const nextMonth = () => {
+    if (currentMonth < months.length - 1) {
+      setCurrentMonth(currentMonth + 1);
+    }
+  };
+
+  const prevMonth = () => {
+    if (currentMonth > 0) {
+      setCurrentMonth(currentMonth - 1);
+    }
+  };
+
+  const nextPhoto = (e) => {
+    e.stopPropagation();
+    const currentPhotos = months[currentMonth].photos;
+    const currentPhotoIndex = photoIndices[currentMonth] || 0;
+    if (currentPhotoIndex < currentPhotos.length - 1) {
+      setPhotoIndices(prev => ({...prev, [currentMonth]: currentPhotoIndex + 1}));
+    }
+  };
+
+  const prevPhoto = (e) => {
+    e.stopPropagation();
+    const currentPhotoIndex = photoIndices[currentMonth] || 0;
+    if (currentPhotoIndex > 0) {
+      setPhotoIndices(prev => ({...prev, [currentMonth]: currentPhotoIndex - 1}));
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowRight') nextMonth();
+      if (e.key === 'ArrowLeft') prevMonth();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentMonth]);
+
+  const currentData = months[currentMonth];
+  const currentPhotoIndex = photoIndices[currentMonth] || 0;
+
+  // Password protection - change this to your desired password
+  const PASSWORD = 'team2025';
+
+  const handlePasswordSubmit = (e) => {
+    e.preventDefault();
+    if (passwordInput.trim() === PASSWORD) {
+      setIsAuthenticated(true);
+      setShowError(false);
+    } else {
+      setShowError(true);
+      setPasswordInput('');
+      setTimeout(() => setShowError(false), 3000);
+    }
+  };
+
+  // If not authenticated, show password screen
+  if (!isAuthenticated) {
+    return (
+      <div className="w-full h-screen bg-slate-950 flex items-center justify-center relative overflow-hidden">
+        {/* Animated radar grid background */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `
+              linear-gradient(to right, #22d3ee 1px, transparent 1px),
+              linear-gradient(to bottom, #22d3ee 1px, transparent 1px)
+            `,
+            backgroundSize: '40px 40px'
+          }}></div>
+        </div>
+
+        <style>{`
+          @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+          }
+          @keyframes scanline {
+            0% { top: 0%; }
+            100% { top: 100%; }
+          }
+        `}</style>
+
+        {/* Scanline effect */}
+        <div className="absolute inset-0 pointer-events-none opacity-10">
+          <div className="absolute w-full h-1 bg-cyan-400 blur-sm animate-pulse" 
+               style={{
+                 animation: 'scanline 8s linear infinite',
+                 top: '0%'
+               }}></div>
+        </div>
+
+        <div className="relative z-10 w-full max-w-md px-6">
+          {/* Logo/Header */}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <Plane className="w-12 h-12 text-cyan-400" style={{animation: 'float 3s ease-in-out infinite'}} />
+              <div className="absolute w-24 h-24 bg-cyan-400/20 rounded-full blur-2xl"></div>
+            </div>
+            <h1 className="text-4xl font-bold text-white tracking-wider font-mono mb-2">FLIGHT LOG 2025</h1>
+            <p className="text-cyan-400 text-sm font-mono">TEAM.YEAR_WRAP.v2025</p>
+            <div className="mt-4 text-slate-400 text-sm font-mono">ACCESS RESTRICTED</div>
+          </div>
+
+          {/* Password Form */}
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 to-blue-400/20 rounded-xl blur-xl"></div>
+              <div className="relative bg-slate-900/80 backdrop-blur-md border-2 border-cyan-400/30 rounded-xl p-6">
+                <label className="block text-cyan-400 text-xs font-mono mb-3 tracking-widest">
+                  ENTER ACCESS CODE
+                </label>
+                <input
+                  type="password"
+                  value={passwordInput}
+                  onChange={(e) => {
+                    setPasswordInput(e.target.value);
+                    setShowError(false);
+                  }}
+                  placeholder="••••••••"
+                  className="w-full bg-slate-800 border-2 border-cyan-400/50 rounded-lg px-4 py-3 text-white font-mono focus:outline-none focus:border-cyan-400 transition-colors"
+                  autoFocus
+                />
+                {showError && (
+                  <div className="mt-3 text-red-400 text-sm font-mono flex items-center gap-2">
+                    <span className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></span>
+                    ACCESS DENIED - INVALID CODE
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              onClick={handlePasswordSubmit}
+              className="w-full bg-cyan-400 hover:bg-cyan-300 text-slate-900 font-bold font-mono py-3 rounded-xl transition-all transform hover:scale-105 active:scale-95"
+            >
+              → AUTHENTICATE
+            </button>
+          </form>
+
+          {/* Debug info - remove this later */}
+          <div className="mt-2 text-xs text-slate-600 font-mono text-center">
+            Debug: Password is "{PASSWORD}" | Input: "{passwordInput}" | Auth: {isAuthenticated ? 'true' : 'false'}
+          </div>
+
+          {/* Footer hint */}
+          <div className="mt-8 text-center text-slate-500 text-xs font-mono">
+            AUTHORIZED PERSONNEL ONLY
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full h-screen bg-slate-950 overflow-hidden relative">
+      {/* Animated radar grid background */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `
+            linear-gradient(to right, #22d3ee 1px, transparent 1px),
+            linear-gradient(to bottom, #22d3ee 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px'
+        }}></div>
+      </div>
+
+      {/* Scanline effect */}
+      <div className="absolute inset-0 pointer-events-none opacity-10">
+        <div className="absolute w-full h-1 bg-cyan-400 blur-sm animate-pulse" 
+             style={{
+               animation: 'scanline 8s linear infinite',
+               top: '0%'
+             }}></div>
+      </div>
+
+      <style>{`
+        @keyframes scanline {
+          0% { top: 0%; }
+          100% { top: 100%; }
+        }
+        @keyframes blink {
+          0%, 50%, 100% { opacity: 1; }
+          25%, 75% { opacity: 0.4; }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+      `}</style>
+
+      {/* Top HUD bar */}
+      <div className="absolute top-0 left-0 right-0 z-30 bg-gradient-to-b from-slate-950 via-slate-900/80 to-transparent">
+        <div className="max-w-6xl mx-auto px-6 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Plane className="w-10 h-10 text-cyan-400" style={{animation: 'float 3s ease-in-out infinite'}} />
+                <div className="absolute -inset-2 bg-cyan-400/20 rounded-full blur-xl"></div>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white tracking-wider font-mono">FLIGHT LOG 2025</h1>
+                <p className="text-cyan-400 text-sm font-mono">TEAM.YEAR_WRAP.v2025</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-cyan-400 text-sm font-mono mb-1">CALLSIGN</div>
+              <div className="text-white font-bold font-mono text-lg">{currentData.callsign}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main card container */}
+      <div 
+        ref={containerRef}
+        className="absolute inset-0 flex items-center justify-center px-4"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onTouchStart={handlePointerDown}
+        onTouchMove={handlePointerMove}
+        onTouchEnd={handlePointerUp}
+        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+      >
+        {months.map((monthData, index) => {
+          const offset = index - currentMonth;
+          const absOffset = Math.abs(offset);
+          const isActive = offset === 0;
+          const MonthIcon = monthData.icon;
+          const photoIndex = photoIndices[index] || 0;
+          const currentPhoto = monthData.photos[photoIndex];
+          const hasMultiplePhotos = monthData.photos.length > 1;
+          
+          return (
+            <div
+              key={index}
+              className="absolute transition-all duration-500 ease-out"
+              style={{
+                transform: `
+                  translateX(calc(${offset * 100}% + ${isDragging && isActive ? dragOffset : 0}px))
+                  scale(${isActive ? 1 : 0.82 - absOffset * 0.08})
+                  rotateY(${offset * 8}deg)
+                `,
+                opacity: absOffset > 1 ? 0 : 1 - absOffset * 0.6,
+                zIndex: 10 - absOffset,
+                pointerEvents: isActive ? 'auto' : 'none'
+              }}
+            >
+              <div className="w-[90vw] max-w-lg relative" style={{ height: 'min(75vh, 700px)' }}>
+                {/* Glowing border effect */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${monthData.gradient} rounded-3xl blur-xl opacity-50`}></div>
+                
+                {/* Main card */}
+                <div className="relative w-full h-full bg-slate-900 rounded-3xl border-2 border-cyan-400/30 shadow-2xl flex flex-col">
+                  
+                  {/* Month badge with radar styling */}
+                  <div className="absolute top-6 left-6 z-20">
+                    <div className="relative">
+                      <div className="bg-cyan-400/10 backdrop-blur-md border-2 border-cyan-400 rounded-lg px-5 py-2">
+                        <div className="text-cyan-400 text-xs font-mono mb-0.5">MONTH</div>
+                        <div className="text-white font-bold text-xl font-mono">{monthData.month}</div>
+                      </div>
+                      <div className="absolute top-0 right-0 w-2 h-2 bg-cyan-400 rounded-full animate-pulse" style={{animation: 'blink 2s infinite'}}></div>
+                    </div>
+                  </div>
+
+                  {/* Icon badge */}
+                  <div className="absolute top-6 right-6 z-20">
+                    <div className="bg-slate-800/80 backdrop-blur-md border border-cyan-400/30 rounded-full p-3">
+                      <MonthIcon className="w-6 h-6 text-cyan-400" />
+                    </div>
+                  </div>
+
+                  {/* Photo carousel section */}
+                  <div 
+                    className="relative photo-carousel bg-slate-800 rounded-t-3xl overflow-hidden"
+                    style={{ height: '40%' }}
+                    onPointerDown={handlePhotoPointerDown}
+                    onPointerMove={handlePhotoPointerMove}
+                    onPointerUp={handlePhotoPointerUp}
+                    onTouchStart={handlePhotoPointerDown}
+                    onTouchMove={handlePhotoPointerMove}
+                    onTouchEnd={handlePhotoPointerUp}
+                  >
+                    <img 
+                      src={currentPhoto} 
+                      alt={`${monthData.month} photo ${photoIndex + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-300"
+                      style={{
+                        transform: `translateX(${isPhotoDragging && isActive ? photoDragOffset * 0.3 : 0}px)`,
+                        filter: 'brightness(0.85)'
+                      }}
+                      onError={(e) => {
+                        console.log('Image failed to load:', currentPhoto);
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                    <div className={`absolute inset-0 bg-gradient-to-br ${monthData.gradient} mix-blend-multiply opacity-40`}></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent"></div>
+                    
+                    {/* Scanline effect over image */}
+                    <div className="absolute inset-0 pointer-events-none opacity-20" style={{
+                      backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(6, 182, 212, 0.1) 2px, rgba(6, 182, 212, 0.1) 4px)'
+                    }}></div>
+
+                    {/* Photo navigation arrows */}
+                    {hasMultiplePhotos && (
+                      <>
+                        <button
+                          onClick={prevPhoto}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 bg-slate-900/80 backdrop-blur-sm border border-cyan-400/50 p-2.5 rounded-lg hover:bg-slate-800 transition-all disabled:opacity-30 disabled:cursor-not-allowed z-10"
+                          disabled={photoIndex === 0}
+                        >
+                          <ChevronLeft className="w-5 h-5 text-cyan-400" />
+                        </button>
+                        <button
+                          onClick={nextPhoto}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 bg-slate-900/80 backdrop-blur-sm border border-cyan-400/50 p-2.5 rounded-lg hover:bg-slate-800 transition-all disabled:opacity-30 disabled:cursor-not-allowed z-10"
+                          disabled={photoIndex === monthData.photos.length - 1}
+                        >
+                          <ChevronRight className="w-5 h-5 text-cyan-400" />
+                        </button>
+                      </>
+                    )}
+
+                    {/* Photo counter and dots */}
+                    {hasMultiplePhotos && (
+                      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
+                        <div className="bg-slate-900/80 backdrop-blur-md border border-cyan-400/30 rounded-full px-4 py-1.5 flex items-center gap-2">
+                          <span className="text-cyan-400 text-xs font-mono">{photoIndex + 1}/{monthData.photos.length}</span>
+                          <div className="flex gap-1">
+                            {monthData.photos.map((_, pIdx) => (
+                              <div
+                                key={pIdx}
+                                className={`w-1.5 h-1.5 rounded-full transition-all ${
+                                  pIdx === photoIndex ? 'bg-cyan-400 w-4' : 'bg-slate-600'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content section */}
+                  <div className="flex-1 p-6 flex flex-col justify-between relative bg-gradient-to-b from-slate-900 to-slate-950">
+                    
+                    {/* HUD-style divider */}
+                    <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent"></div>
+                    
+                    {/* Title */}
+                    <div className="mb-6">
+                      <div className="text-cyan-400 text-xs font-mono mb-2 tracking-widest">MISSION BRIEF</div>
+                      <h2 className="text-3xl font-bold text-white mb-2 leading-tight">
+                        {monthData.title}
+                      </h2>
+                    </div>
+
+                    {/* Highlights list */}
+                    <div className="flex-1 space-y-3 mb-4">
+                      {monthData.highlights.map((highlight, i) => (
+                        <div 
+                          key={i} 
+                          className="flex items-start gap-3 group"
+                        >
+                          <div className="mt-1.5 min-w-[6px] w-1.5 h-1.5 bg-cyan-400 rounded-full group-hover:scale-150 transition-transform"></div>
+                          <p className="text-slate-300 text-base leading-relaxed font-light">
+                            {highlight}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Footer with gradient line */}
+                    <div className="relative pt-4">
+                      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent"></div>
+                      <div className="flex items-center justify-between text-xs font-mono text-slate-500">
+                        <span>LOG.{String(index + 1).padStart(2, '0')}/12</span>
+                        <span className="text-cyan-400/60">▸ SWIPE TO NAVIGATE</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Navigation buttons with HUD styling */}
+      <button
+        onClick={prevMonth}
+        disabled={currentMonth === 0}
+        className="absolute left-6 top-1/2 -translate-y-1/2 z-30 bg-slate-900/80 backdrop-blur-md border-2 border-cyan-400/50 p-4 rounded-xl hover:bg-slate-800 hover:border-cyan-400 hover:scale-110 transition-all disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:scale-100 group"
+      >
+        <ChevronLeft className="w-6 h-6 text-cyan-400 group-hover:animate-pulse" />
+      </button>
+
+      <button
+        onClick={nextMonth}
+        disabled={currentMonth === months.length - 1}
+        className="absolute right-6 top-1/2 -translate-y-1/2 z-30 bg-slate-900/80 backdrop-blur-md border-2 border-cyan-400/50 p-4 rounded-xl hover:bg-slate-800 hover:border-cyan-400 hover:scale-110 transition-all disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:scale-100 group"
+      >
+        <ChevronRight className="w-6 h-6 text-cyan-400 group-hover:animate-pulse" />
+      </button>
+
+      {/* Progress indicator - radar style */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20">
+        <div className="bg-slate-900/80 backdrop-blur-md border border-cyan-400/30 rounded-full px-6 py-3 flex items-center gap-2">
+          {months.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentMonth(index)}
+              className="group relative"
+            >
+              <div className={`transition-all ${
+                index === currentMonth 
+                  ? 'w-10 h-2 bg-cyan-400 shadow-lg shadow-cyan-400/50' 
+                  : 'w-2 h-2 bg-slate-600 group-hover:bg-cyan-400/50'
+              } rounded-full`}></div>
+              {index === currentMonth && (
+                <div className="absolute inset-0 bg-cyan-400 rounded-full blur-md opacity-50"></div>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Bottom HUD info */}
+      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 text-center">
+        <div className="text-slate-500 text-xs font-mono tracking-wider">
+          USE <span className="text-cyan-400">← →</span> KEYS OR <span className="text-cyan-400">SWIPE</span> TO NAVIGATE
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AviationYearlyWrap;
