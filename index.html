@@ -164,20 +164,22 @@
 
         
         function checkPassword() {
-            const input = document.getElementById('passwordInput');
-            const error = document.getElementById('errorMessage');
-            if (input.value.trim() === PASSWORD) {
-                document.getElementById('passwordScreen').classList.add('hidden');
-                document.getElementById('mainScreen').classList.remove('hidden');
-                initializeApp();
-            } else {
-                error.style.display = 'block';
-                input.value = '';
-                setTimeout(() => error.style.display = 'none', 3000);
-            }
-        }
-        
-        document.addEventListener('keypress', (e) => { if (e.key === 'Enter' && !document.getElementById('passwordScreen').classList.contains('hidden')) checkPassword(); });
+    const input = document.getElementById('passwordInput');
+    const error = document.getElementById('errorMessage');
+    if (input.value.trim() === PASSWORD) {
+        document.getElementById('passwordScreen').classList.add('hidden');
+        document.getElementById('mainScreen').classList.remove('hidden');
+        initializeApp();
+    } else {
+        error.style.display = 'block';
+        input.value = '';
+        setTimeout(() => error.style.display = 'none', 3000);
+    }
+}
+        document.addEventListener('keypress', (e) => { 
+    if (e.key === 'Enter' && !document.getElementById('passwordScreen').classList.contains('hidden')) checkPassword(); 
+});
+
         
         function initializeApp() {
             renderCards();
