@@ -54,7 +54,9 @@
         .nav-button svg { width: 1.5rem; height: 1.5rem; color: #22d3ee; }
         .nav-left { left: 1.5rem; }
         .nav-right { right: 1.5rem; }
-        .progress-dots { position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 20; display: flex; gap: 0.5rem; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(34, 211, 238, 0.3); border-radius: 9999px; padding: 0.75rem 1.5rem; }
+        .progress-dots { position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 20; display: flex; gap: 0.35rem; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(34, 211, 238, 0.3); border-radius: 9999px; padding: 0.4rem 0.8rem; }
+.dot { width: 0.25rem; height: 0.25rem; background: #475569; border-radius: 9999px; cursor: pointer; transition: all 0.3s; }
+.dot.active { width: 1.25rem; height: 0.25rem; background: #22d3ee; animation: pulseGlow 2s ease-in-out infinite; }
         .dot { width: 0.5rem; height: 0.5rem; background: #475569; border-radius: 9999px; cursor: pointer; transition: all 0.3s; }
         .dot.active { width: 2.5rem; background: #22d3ee; box-shadow: 0 0 20px rgba(34, 211, 238, 0.5); }
         .header { position: absolute; top: 0; left: 0; right: 0; z-index: 30; background: linear-gradient(to bottom, #020617, rgba(2, 6, 23, 0)); padding: 1.5rem; }
@@ -68,6 +70,11 @@
         .photo-dot.active { width: 1rem; background: #22d3ee; }
         .hidden { display: none !important; }
         .error-msg { display: none; margin-top: 0.75rem; color: #f87171; font-size: 0.875rem; }
+        @keyframes confetti-fall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+.confetti { position: fixed; width: 10px; height: 10px; background: #22d3ee; top: -10px; z-index: 100; animation: confetti-fall 3s linear; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -149,7 +156,7 @@
             { month: "SEP", callsign: "BLANK-909", title: "Maintenance Break", highlights: ["Flight recorder offline", "Data pending upload", "Check back soon..."], photos: ["./images/Sep1.jpeg", "./images/Sep2.jpeg", "./images/Sep3.jpeg", "./images/Sep4.jpeg"], gradient: "gradient-red", icon: "plane" },
             { month: "OCT", callsign: "PARIS-EUROCTL", title: "Innovation & Asia Expansion", highlights: ["Cillas & Viktor → Eurocontrol Paris", "Elena meets AirAsia in Malaysia", "Global expansion mode: ON"], photos: ["./images/Oct1.jpeg", "./images/Oct2.jpeg", "./images/Oct3.jpeg", "./images/Oct4.jpeg", "./images/Oct5.jpeg"], gradient: "gradient-yellow", icon: "mapPin" },
             { month: "NOV", callsign: "CPH-SIMFLIGHT", title: "Visitors & Flight Sim Flex", highlights: ["Dor visits Copenhagen", "Simon & Viktor claim they can land a plane", "Confidence: 100% | Reality: TBD"], photos: ["./images/Nov1.jpeg", "./images/Nov2.jpeg", "./images/Nov3.jpeg", "./images/Nov4.jpeg", "./images/Nov5.jpeg", "./images/Nov6.jpeg", "./images/Nov7.jpeg"], gradient: "gradient-orange", icon: "trophy" },
-            { month: "DEC", callsign: "YEAR-END-2025", title: "Final Approach", highlights: ["Year wrap complete", "Flight data logged", "Ready for 2026 takeoff 🚀"], photos: ["./images/Dec1.jpeg", "./images/Dec10.jpeg", "./images/Dec11.jpeg", "./images/Dec12.jpeg", "./images/Dec13.jpeg", "./images/Dec14.jpeg"], gradient: "gradient-purple", icon: "rocket" }
+            { month: "DEC", callsign: "YEAR-END-2025", title: "Final Approach", highlights: ["Year wrap complete", "Flight data logged", "Ready for 2026 takeoff 🚀"], photos: ["./images/Dec1.jpeg", "./images/Dec10.jpeg", "./images/Dec11.jpeg", "./images/Dec12.jpeg", "./images/Dec13.jpeg"], gradient: "gradient-purple", icon: "rocket" }
         ];
         let currentMonth = 0;
         let photoIndices = {};
@@ -216,11 +223,11 @@
                 card.style.opacity = abs > 1 ? 0 : 1 - abs * 0.6;
                 card.style.zIndex = 10 - abs;
                 
-                // Animate highlights when card becomes active
                 if (offset === 0) {
                     setTimeout(() => {
                         const highlights = document.querySelectorAll('#highlights-' + i + ' .highlight-item');
                         highlights.forEach(h => h.classList.add('active'));
+                        if (i === 11) triggerConfetti();
                     }, 300);
                 }
             });
@@ -228,7 +235,26 @@
                 if (i === currentMonth) d.classList.add('active'); else d.classList.remove('active');
             });
         }
-        
+            });
+            document.querySelectorAll('.dot').forEach((d, i) => {
+                if (i === currentMonth) d.classList.add('active'); else d.classList.remove('active');
+            });
+        }
+        function triggerConfetti() {
+            const colors = ['#22d3ee', '#fb923c', '#f472b6', '#818cf8', '#34d399', '#fbbf24'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 5000);
+                }, i * 50);
+            }
+        }
         function nextMonth() { 
             if (currentMonth < months.length - 1) { 
                 currentMonth++; 
